@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5 import QtWidgets
-from talk_show import Client
+from vega_chat import Client
 
 """
 Vega Bootstrap
@@ -72,8 +72,10 @@ class Vega(QWidget):
         self.random_position()
 
     def init_data(self):
-        imgs = get_images(["vega1b.png", "vega2b.png", "vega1b.png", "vega3b"])
+        # singing
+        imgs = get_images(["vega1.png", "vega1b.png", "vega2.png", "vega2b.png", "vega3.png", "vega3b.png"])
         self.action_dataset.append(imgs)
+        #
         imgs = get_images(["vega11.png", "vega15.png", "vega16.png", "vega17.png", "vega16.png", "vega17.png", "vega16.png", "vega17.png"])
         self.action_dataset.append(imgs)
         imgs = get_images(["vega54.png", "vega55.png", "vega26.png", "vega27.png", "vega28.png", "vega29.png", "vega26.png", "vega27.png", "vega28.png", "vega29.png", "vega26.png", "vega27.png", "vega28.png", "vega29.png"])
