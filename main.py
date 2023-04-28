@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5 import QtWidgets
-from vega_chat import Client
+from chat_client import ChatClient
 
 """
 Vega Bootstrap
@@ -38,14 +38,14 @@ class Vega(QWidget):
         self.mouse_drag_pos = None
 
         # 托盘
-        quit = QAction("退出", self, triggered=self.quit)
-        quit.setIcon(QIcon(icon))
         showing = QAction("现身~", self, triggered=self.showing)
         showing.setIcon(QIcon(icon))
+        quit = QAction("退出", self, triggered=self.quit)
+        quit.setIcon(QIcon(icon))
 
         self.tray_icon_menu = QMenu(self)
-        self.tray_icon_menu.addAction(quit)
         self.tray_icon_menu.addAction(showing)
+        self.tray_icon_menu.addAction(quit)
 
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(QIcon(icon))
@@ -69,7 +69,7 @@ class Vega(QWidget):
         self.timer = QTimer()
         self.timer.timeout.connect(self.run_random_actions)
         self.timer.start(500)
-        self.random_position()
+        self.init_position(random_pos=False)
 
     def init_data(self):
         # singing
@@ -114,10 +114,11 @@ class Vega(QWidget):
         self.img.setPixmap(QPixmap.fromImage(imgs[self.index]))
         self.index += 1
 
-    def random_position(self):
+    def init_position(self, random_pos=False):
         screen = QDesktopWidget().screenGeometry()
-        vega_window = self.geometry()
-        self.move((screen.width()-vega_window.width())*random.random(), (screen.height()-vega_window.height())*random.random())
+        x = (screen.width() - self.geometry().width()) * (random.random() if random_pos else 1)
+        y = (screen.height() - self.geometry().height()) * (random.random() if random_pos else 1)
+        self.move(x, y)
 
     def quit(self):
         self.close()
@@ -158,10 +159,9 @@ class Vega(QWidget):
         # 定义菜单
         menu = QMenu(self)
         # 定义菜单项
-        hide = menu.addAction("退下吧~")
         question_answer = menu.addAction("聊聊?")
+        hide = menu.addAction("退下吧~")
         menu.addSeparator()
-        # quitAction = menu.addAction("退出")
 
         # 使用exec_()方法显示菜单。从鼠标右键事件对象中获得当前坐标。mapToGlobal()方法把当前组件的相对坐标转换为窗口（window）的绝对坐标。
         action = menu.exec_(self.mapToGlobal(event.pos()))
@@ -170,12 +170,17 @@ class Vega(QWidget):
         if action == hide:
             self.setWindowOpacity(0)
         if action == question_answer:
-            self.client = Client()
+            self.client = ChatClient(parent=self)
             self.client.show()
+
+    #
+    def on_widget2_position(self):
+        widget2_pos = vega.pos()
+        print(widget2_pos)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    pet = Vega()
+    vega = Vega()
     sys.exit(app.exec_())
 

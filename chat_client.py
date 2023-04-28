@@ -1,24 +1,27 @@
 import sys
+import time
 import codecs
 import configparser
 import openai
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import *
 from threading import Thread
 
 
-class Client(QWidget):
+class ChatClient(QWidget):
     def __init__(self, parent=None, **kwargs):
         QtWidgets.QWidget.__init__(self)
-        self.setGeometry(600, 300, 600, 337)
+        self.setGeometry(parent.x() - 600, parent.y() + parent.height() - 337, 600, 337)
         self.setWindowTitle("Vega")
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)  # 无边框 + 窗口置顶
         palette = QtGui.QPalette()
         bg = QtGui.QPixmap("img/background.jpg")
         palette.setBrush(self.backgroundRole(), QtGui.QBrush(bg))
         self.setPalette(palette)
-        self.add_ui()
+        self.init_ui()
         self.work_thread()
 
         config_private = 'config_private.ini'
@@ -30,7 +33,7 @@ class Client(QWidget):
         openai.api_key = self.config.get("OpenAI", "api_key")
         openai.api_base = self.config.get("OpenAI", "api_base")
 
-    def add_ui(self):
+    def init_ui(self):
         # 多行文本显示，显示所有的聊天信息
         self.content = QTextBrowser(self)
         self.content.setGeometry(30, 30, 550, 150)
@@ -73,12 +76,21 @@ class Client(QWidget):
     def send_msg(self):
         msg = self.message.text()
         self.content.append("Me: " + msg)
+
         if msg.upper() == "Q" or "退下吧" in msg:
-            self.destroy()
+            self.content.append("Vega: 切~ 臭屁! 拜拜 👋")
+            self.timer = QTimer(self)
+            self.timer.timeout.connect(self.do_destroy)
+            self.timer.start(300)
+        else:
+            text_output = self.get_completion(msg)
+            self.content.append("Vega: " + text_output)
         self.message.clear()
 
-        text_output = self.get_completion(msg)
-        self.content.append("Vega: " + text_output)
+    def do_destroy(self):
+        self.timer.stop()
+        time.sleep(2)
+        self.destroy()
 
     # 接收消息
     def recv_msg(self):
@@ -106,6 +118,6 @@ class Client(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    client = Client()
+    client = ChatClient()
     client.show()
     sys.exit(app.exec_())
